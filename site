@@ -1,1 +1,281 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adesivo SmartSaúde</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet">
+  <style>
+  html, body { height: 100%; margin: 0; }
+  * { font-family: 'DM Sans', sans-serif; }
+  .font-display { font-family: 'Playfair Display', serif; }
+  .radio-card input:checked + label { border-color: var(--primary); background: var(--primary-light); }
+  .radio-card label { transition: all 0.2s; }
+  .radio-card label:hover { border-color: var(--primary); }
+  .fade-in { animation: fadeIn 0.6s ease forwards; opacity: 0; }
+  @keyframes fadeIn { to { opacity: 1; } }
+  .slide-up { animation: slideUp 0.5s ease forwards; opacity: 0; transform: translateY(20px); }
+  @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+  :root {
+    --bg: #FFF5EE;
+    --surface: #FFFFFF;
+    --text: #3D2C2C;
+    --primary: #D4856A;
+    --secondary: #B8997A;
+  }
+  .toast { animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards; }
+  @keyframes toastIn { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+  @keyframes toastOut { to { transform: translateY(20px); opacity:0; } }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full" style="background:var(--bg); color:var(--text);">
+  <div id="app" class="h-full w-full overflow-auto">
+   <!-- COVER -->
+   <div id="cover-screen" class="min-h-full w-full flex flex-col items-center justify-center px-6 py-12 fade-in" style="background: linear-gradient(135deg, #FFF5EE 0%, #FDEBD3 50%, #F5D5C3 100%);">
+    <div class="text-center max-w-lg">
+     <div class="mx-auto mb-6 w-20 h-20 rounded-full flex items-center justify-center" style="background:var(--primary);">
+      <i data-lucide="heart-pulse" style="width:40px;height:40px;color:#fff;"></i>
+     </div>
+     <h1 id="cover-title-el" class="font-display text-4xl md:text-5xl font-bold mb-4" style="color:var(--text);">Adesivo SmartSaúde</h1>
+     <p id="cover-subtitle-el" class="text-lg md:text-xl mb-2" style="color:var(--secondary);">Sua opinião transforma nosso cuidado com você. Queremos ouvir o que você tem a dizer!</p>
+     <p class="text-sm mb-8" style="color:var(--secondary);">Pesquisa de Satisfação</p><button id="start-btn" onclick="showSurvey()" class="px-8 py-3 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all" style="background:var(--primary);"> Começar <i data-lucide="arrow-right" style="width:18px;height:18px;display:inline;vertical-align:middle;margin-left:4px;"></i> </button>
+    </div>
+   </div><!-- SURVEY -->
+   <div id="survey-screen" class="hidden w-full max-w-2xl mx-auto px-4 py-10">
+    <form id="survey-form" onsubmit="handleSubmit(event)">
+     <!-- Info -->
+     <div class="slide-up mb-8 p-6 rounded-2xl shadow-sm" style="background:var(--surface);">
+      <h2 class="font-display text-2xl font-bold mb-4">Seus Dados</h2><label class="block text-sm font-medium mb-1" for="nome">Nome completo</label> <input id="nome" name="nome" required class="w-full border rounded-xl px-4 py-3 mb-4 focus:outline-none focus:ring-2" style="border-color:#e0d0c8; --tw-ring-color:var(--primary);" placeholder="Digite seu nome"> <label class="block text-sm font-medium mb-1" for="email">E-mail</label> <input id="email" name="email" type="email" required class="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2" style="border-color:#e0d0c8; --tw-ring-color:var(--primary);" placeholder="seuemail@exemplo.com">
+     </div><!-- Questions -->
+     <div id="questions-container"></div><!-- Feedback -->
+     <div class="slide-up mb-8 p-6 rounded-2xl shadow-sm" style="background:var(--surface); animation-delay:0.5s;">
+      <h2 class="font-display text-2xl font-bold mb-4">Deixe seu Feedback</h2><label class="block text-sm font-medium mb-2">Tipo de feedback</label>
+      <div class="flex flex-wrap gap-3 mb-4">
+       <label class="cursor-pointer px-4 py-2 rounded-full border text-sm font-medium transition-all" style="border-color:#e0d0c8;" id="fb-reclamacao"> <input type="radio" name="tipo_feedback" value="Reclamação" class="hidden" onchange="updateFbStyle(this)"> Reclamação </label> <label class="cursor-pointer px-4 py-2 rounded-full border text-sm font-medium transition-all" style="border-color:#e0d0c8;" id="fb-sugestao"> <input type="radio" name="tipo_feedback" value="Sugestão" class="hidden" onchange="updateFbStyle(this)"> Sugestão </label> <label class="cursor-pointer px-4 py-2 rounded-full border text-sm font-medium transition-all" style="border-color:#e0d0c8;" id="fb-elogio"> <input type="radio" name="tipo_feedback" value="Elogio" class="hidden" onchange="updateFbStyle(this)"> Elogio </label>
+      </div><label class="block text-sm font-medium mb-1">Descreva (opcional)</label> <textarea name="feedback_texto" rows="3" class="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 resize-none" style="border-color:#e0d0c8; --tw-ring-color:var(--primary);" placeholder="Conte mais sobre sua experiência..."></textarea>
+     </div><!-- Submit -->
+     <div class="text-center mb-12">
+      <button id="submit-btn" type="submit" class="px-10 py-3 rounded-full text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all" style="background:var(--primary);"> <span id="submit-text">Enviar Pesquisa</span> <span id="submit-loading" class="hidden">Enviando...</span> </button>
+     </div>
+    </form>
+   </div><!-- SUCCESS -->
+   <div id="success-screen" class="hidden min-h-full w-full flex flex-col items-center justify-center px-6 py-12">
+    <div class="text-center max-w-md fade-in">
+     <div class="mx-auto mb-6 w-20 h-20 rounded-full flex items-center justify-center" style="background:#E8F5E9;">
+      <i data-lucide="check-circle" style="width:44px;height:44px;color:#4CAF50;"></i>
+     </div>
+     <h2 class="font-display text-3xl font-bold mb-3">Obrigado!</h2>
+     <p class="text-lg mb-6" style="color:var(--secondary);">Sua opinião é muito importante para nós. Agradecemos por dedicar seu tempo!</p><button onclick="resetForm()" class="px-8 py-3 rounded-full font-semibold transition-all" style="border:2px solid var(--primary); color:var(--primary);">Enviar outra resposta</button>
+    </div>
+   </div><!-- Toast container -->
+   <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"></div>
+  </div>
+  <script>
+const questions = [
+  "Como você avalia a qualidade geral do Adesivo SmartSaúde?",
+  "O adesivo adere bem à pele durante o uso?",
+  "O adesivo é confortável de usar ao longo do dia?",
+  "Como você avalia a facilidade de aplicação do adesivo?",
+  "O adesivo causa alguma irritação ou desconforto na pele?",
+  "Como você avalia a durabilidade do adesivo?",
+  "O adesivo atendeu às suas expectativas de uso?",
+  "Como você avalia o custo-benefício do produto?",
+  "Você recomendaria o Adesivo SmartSaúde para outras pessoas?",
+  "Qual é o seu nível de satisfação geral com o produto?"
+];
 
+const options = [
+  ["Excelente", "Bom", "Regular", "Ruim", "Péssimo"],
+  ["Muito bem", "Bem", "Razoável", "Mal", "Muito mal"],
+  ["Muito confortável", "Confortável", "Neutro", "Desconfortável", "Muito desconfortável"],
+  ["Muito fácil", "Fácil", "Neutro", "Difícil", "Muito difícil"],
+  ["Nenhuma irritação", "Leve", "Moderada", "Forte", "Muito forte"],
+  ["Excelente", "Boa", "Regular", "Ruim", "Péssima"],
+  ["Superou", "Atendeu", "Parcialmente", "Não atendeu", "Decepcionou"],
+  ["Excelente", "Bom", "Regular", "Ruim", "Péssimo"],
+  ["Com certeza", "Provavelmente sim", "Talvez", "Provavelmente não", "De jeito nenhum"],
+  ["Muito satisfeito", "Satisfeito", "Neutro", "Insatisfeito", "Muito insatisfeito"]
+];
+
+const emojis = ["","","","",""];
+
+// Build questions
+const qContainer = document.getElementById('questions-container');
+questions.forEach((q, i) => {
+  const delay = (i * 0.04 + 0.1).toFixed(2);
+  let html = `<div class="slide-up mb-6 p-6 rounded-2xl shadow-sm" style="background:var(--surface); animation-delay:${delay}s;">
+    <p class="font-semibold mb-3"><span class="inline-block w-7 h-7 rounded-full text-center text-white text-sm leading-7 mr-2" style="background:var(--primary);">${i+1}</span>${q}</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
+  options[i].forEach((opt, j) => {
+    html += `<div class="radio-card">
+      <input type="radio" name="q${i+1}" id="q${i+1}_${j}" value="${opt}" class="hidden" required>
+      <label for="q${i+1}_${j}" class="block cursor-pointer border rounded-xl px-4 py-2.5 text-sm" style="border-color:#e0d0c8;">
+        ${emojis[j]} ${opt}
+      </label>
+    </div>`;
+  });
+  html += `</div></div>`;
+  qContainer.insertAdjacentHTML('beforeend', html);
+});
+
+function showSurvey() {
+  document.getElementById('cover-screen').classList.add('hidden');
+  document.getElementById('survey-screen').classList.remove('hidden');
+}
+
+function updateFbStyle(input) {
+  document.querySelectorAll('[id^="fb-"]').forEach(l => { l.style.borderColor = '#e0d0c8'; l.style.background = 'transparent'; });
+  input.parentElement.style.borderColor = 'var(--primary)';
+  input.parentElement.style.background = 'var(--primary-light, #FFF0E8)';
+}
+
+let currentData = [];
+let recordCount = 0;
+
+const dataHandler = {
+  onDataChanged(data) {
+    currentData = data;
+    recordCount = data.length;
+  }
+};
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  if (recordCount >= 999) {
+    showToast('Limite de respostas atingido. Obrigado!', 'warn');
+    return;
+  }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  document.getElementById('submit-text').classList.add('hidden');
+  document.getElementById('submit-loading').classList.remove('hidden');
+
+  const fd = new FormData(e.target);
+  const record = {
+    nome: fd.get('nome') || '',
+    email: fd.get('email') || '',
+    q1: fd.get('q1') || '', q2: fd.get('q2') || '', q3: fd.get('q3') || '',
+    q4: fd.get('q4') || '', q5: fd.get('q5') || '', q6: fd.get('q6') || '',
+    q7: fd.get('q7') || '', q8: fd.get('q8') || '', q9: fd.get('q9') || '',
+    q10: fd.get('q10') || '',
+    tipo_feedback: fd.get('tipo_feedback') || '',
+    feedback_texto: fd.get('feedback_texto') || '',
+    created_at: new Date().toISOString()
+  };
+
+  const result = await window.dataSdk.create(record);
+  btn.disabled = false;
+  document.getElementById('submit-text').classList.remove('hidden');
+  document.getElementById('submit-loading').classList.add('hidden');
+
+  if (result.isOk) {
+    document.getElementById('survey-screen').classList.add('hidden');
+    document.getElementById('success-screen').classList.remove('hidden');
+  } else {
+    showToast('Erro ao enviar. Tente novamente.', 'error');
+  }
+}
+
+function resetForm() {
+  document.getElementById('survey-form').reset();
+  document.querySelectorAll('[id^="fb-"]').forEach(l => { l.style.borderColor = '#e0d0c8'; l.style.background = 'transparent'; });
+  document.getElementById('success-screen').classList.add('hidden');
+  document.getElementById('cover-screen').classList.remove('hidden');
+}
+
+function showToast(msg, type) {
+  const c = document.getElementById('toast-container');
+  const bg = type === 'error' ? '#EF4444' : '#F59E0B';
+  const div = document.createElement('div');
+  div.className = 'toast px-6 py-3 rounded-full text-white text-sm font-medium shadow-lg';
+  div.style.background = bg;
+  div.textContent = msg;
+  c.appendChild(div);
+  setTimeout(() => div.remove(), 3200);
+}
+
+// SDK Init
+const defaultConfig = {
+  cover_title: 'Adesivo SmartSaúde',
+  cover_subtitle: 'Sua opinião transforma nosso cuidado com você. Queremos ouvir o que você tem a dizer!',
+  submit_button_text: 'Enviar Pesquisa',
+  background_color: '#FFF5EE',
+  surface_color: '#FFFFFF',
+  text_color: '#3D2C2C',
+  primary_color: '#D4856A',
+  secondary_color: '#B8997A',
+  font_family: 'DM Sans',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const c = k => config[k] || defaultConfig[k];
+  document.documentElement.style.setProperty('--bg', c('background_color'));
+  document.documentElement.style.setProperty('--surface', c('surface_color'));
+  document.documentElement.style.setProperty('--text', c('text_color'));
+  document.documentElement.style.setProperty('--primary', c('primary_color'));
+  document.documentElement.style.setProperty('--secondary', c('secondary_color'));
+  document.body.style.background = c('background_color');
+  document.body.style.color = c('text_color');
+
+  const el = id => document.getElementById(id);
+  el('cover-title-el').textContent = c('cover_title');
+  el('cover-subtitle-el').textContent = c('cover_subtitle');
+  el('submit-text').textContent = c('submit_button_text');
+
+  const font = c('font_family');
+  document.body.style.fontFamily = `${font}, DM Sans, sans-serif`;
+
+  const base = c('font_size');
+  document.querySelectorAll('p, label, input, textarea, button span').forEach(e => e.style.fontSize = `${base}px`);
+
+  // Update primary-colored elements
+  document.querySelectorAll('[style*="background:var(--primary)"]').forEach(e => e.style.background = c('primary_color'));
+  el('start-btn').style.background = c('primary_color');
+  el('submit-btn').style.background = c('primary_color');
+  document.querySelectorAll('.rounded-full.text-center.text-white').forEach(e => e.style.background = c('primary_color'));
+
+  // Cover gradient
+  el('cover-screen').style.background = `linear-gradient(135deg, ${c('background_color')} 0%, ${c('surface_color')} 100%)`;
+}
+
+function makeMutable(key) {
+  return {
+    get: () => window.elementSdk.config[key] || defaultConfig[key],
+    set: (v) => { window.elementSdk.config[key] = v; window.elementSdk.setConfig({ [key]: v }); }
+  };
+}
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => applyConfig(config),
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      makeMutable('background_color'),
+      makeMutable('surface_color'),
+      makeMutable('text_color'),
+      makeMutable('primary_color'),
+      makeMutable('secondary_color')
+    ],
+    borderables: [],
+    fontEditable: makeMutable('font_family'),
+    fontSizeable: makeMutable('font_size')
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['cover_title', config.cover_title || defaultConfig.cover_title],
+    ['cover_subtitle', config.cover_subtitle || defaultConfig.cover_subtitle],
+    ['submit_button_text', config.submit_button_text || defaultConfig.submit_button_text]
+  ])
+});
+
+window.dataSdk.init(dataHandler);
+
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f075138e7f709d2',t:'MTc3Njg4OTEwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
